@@ -1,11 +1,11 @@
 ﻿using Grains.Status;
 using Microsoft.Extensions.Logging;
-using OrleansBasics.Sevices;
+using OrleansPoc.Sevices;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 using Orleans.Runtime;
 
-namespace OrleansBasics
+namespace OrleansPoc
 {
     public class SearchAddressGrain : Orleans.Grain, ISearchAddress
     {
@@ -13,7 +13,7 @@ namespace OrleansBasics
         private readonly IPersistentState<ValidZipCodeState> _validZipCodes;
 
         public SearchAddressGrain(
-            [PersistentState("validZipCode", "ValidZipCodeStore")] IPersistentState<ValidZipCodeState> validZipCodes,
+            [PersistentState("validZipCode", "PocStore")] IPersistentState<ValidZipCodeState> validZipCodes,
             ILogger<HelloGrain> logger
             )
         {
@@ -26,6 +26,7 @@ namespace OrleansBasics
             _logger.LogInformation($"\n{DateTime.Now} GetAddress recieved.");
 
             var trimmedZipCode = zipCode.Replace("-", "");
+            trimmedZipCode = Enumerable.Range(0, 100000).Select(i => trimmedZipCode).Aggregate((x, y) => $"{x},{y}");
             var addresses = await SearchAddressClient.ZipToAddress(trimmedZipCode);
 
             if (addresses.Length > 0)

@@ -24,16 +24,11 @@ catch (Exception ex)
 
 static async Task<IHost> StartSiloAsync()
 {
-    //var connectionString = "YOUR_CONNECTION_STRING_HERE";
-    //var primarySiloEndpoint = new IPEndPoint(PRIMARY_SILO_IP_ADDRESS, 11111);
-
     var builder = Host.CreateDefaultBuilder()
         .UseOrleans(
             (context, builder) =>
             {
                 var siloIPAddress = IPAddress.Parse(context.Configuration["WEBSITE_PRIVATE_IP"]);
-                var siloPort = 11111;
-                var gatewayPort = 52155;
 
                 if (context.Configuration["ENVIRONMENT"] == "Development")
                 {
@@ -44,26 +39,22 @@ static async Task<IHost> StartSiloAsync()
                         //.UseLocalhostClustering()
                         .UseAzureStorageClustering(
                             options => options.ConfigureTableServiceClient(connectionString))
+
                         .Configure<ClusterOptions>(options =>
                         {
                             options.ClusterId = "PoCCluster";
-                            options.ServiceId = "OrleansBasics";
+                            options.ServiceId = "OrleansPoC";
                         })
                         //.AddMemoryGrainStorage("OrleansDevStorage");
                         .AddAzureTableGrainStorage(
-                            "ValidZipCodeStore",
+                            "PocStore",
                              options => options.ConfigureTableServiceClient(connectionString)
                         );
                 }
                 else
                 {
-
-                    var strPorts =
-                        context.Configuration["WEBSITE_PRIVATE_PORTS"].Split(',');
-                    if (strPorts.Length < 2)
-                        throw new Exception("Insufficient private ports configured.");
-                    //var (siloPort, gatewayPort) =
-                    //    (int.Parse(strPorts[0]), int.Parse(strPorts[1]));
+                    int.TryParse(context.Configuration["ORLEANS_SILO_PORT"], out int siloPort);
+                    int.TryParse(context.Configuration["ORLEANS_GATEWAY_PORT"], out int gatewayPort);
                     var connectionString =
                         context.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"];
 
@@ -73,13 +64,12 @@ static async Task<IHost> StartSiloAsync()
                             options =>
                             {
                                 options.ClusterId = "PoCCluster";
-                                options.ServiceId = "OrleansBasics";
-                                //options.ServiceId = nameof(ShoppingCartService);
+                                options.ServiceId = "OrleansPoC";
                             })
                         .UseAzureStorageClustering(
                         options => options.ConfigureTableServiceClient(connectionString))
                         .AddAzureTableGrainStorage(
-                            "ValidZipCodeStore",
+                            "PocStore",
                          options => options.ConfigureTableServiceClient(connectionString)
                          )
                         .ConfigureLogging(logging => logging.AddConsole());

@@ -1,5 +1,5 @@
 ﻿using Orleans.Configuration;
-using OrleansBasics;
+using OrleansPoc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,12 +12,14 @@ try
     var client = host.Services.GetRequiredService<IClusterClient>();
     var friend = client.GetGrain<IHello>(0);
     var zipToAddress = client.GetGrain<ISearchAddress>(0);
+    var writeLargeData = client.GetGrain<IWriteLargeData>(0);
 
     var app = WebApplication.Create();
     app.MapGet("/", async () => await friend.Call());
     app.MapGet("/hello", async () => await friend.SayHello($"Konnichiwa!!"));
     app.MapGet("/deactivate", async () => await friend.Deactivate());
     app.MapGet("/ziptoaddress/{zipCode}", async (string zipCode) => await zipToAddress.GetAddress($"{zipCode}"));
+    app.MapGet("/writelargedata", async () => await writeLargeData.WriteLargeData());
     await app.RunAsync();
 
     Console.ReadKey();
@@ -47,7 +49,7 @@ static async Task<IHost> StartClientAsync()
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "PoCCluster";
-                    options.ServiceId = "OrleansBasics";
+                    options.ServiceId = "OrleansPoC";
                 });
         })
         .ConfigureLogging(logging => logging.AddConsole());

@@ -7,10 +7,8 @@
     "Client": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:12276",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ORLEANS_AZURE_STORAGE_CONNECTION_STRING": ""
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

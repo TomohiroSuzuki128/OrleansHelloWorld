@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 // HttpClient is intended to be instantiated once per application, rather than per-use.
 HttpClient httpClient = new (new HttpClientHandler
 {
-    MaxConnectionsPerServer = 2
+    MaxConnectionsPerServer = 1
 });
-//string uri = "http://localhost:12276/hello";
 string baseUri = "http://localhost:12276/ziptoaddress/";
 ParallelOptions parallelOptions = new()
 {

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using OrleansBasics.Models;
 
-namespace OrleansBasics.Sevices
+namespace OrleansPoc.Sevices
 {
     public static class SearchAddressClient
     {

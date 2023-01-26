@@ -7,37 +7,31 @@ using Orleans.Runtime;
 
 namespace OrleansPoc
 {
-    public class SearchAddressGrain : Orleans.Grain, ISearchAddress
+    public class WriteLargeDataGrain : Orleans.Grain, IWriteLargeData
     {
         private readonly ILogger _logger;
-        private readonly IPersistentState<ValidZipCodeState> _validZipCodes;
+        private readonly IPersistentState<WriteLargeDataState> _largeData;
 
-        public SearchAddressGrain(
-            [PersistentState("validZipCode", "PocStore")] IPersistentState<ValidZipCodeState> validZipCodes,
+        public WriteLargeDataGrain(
+            [PersistentState("largeData", "PocStore")] IPersistentState<WriteLargeDataState> largeData,
             ILogger<HelloGrain> logger
             )
         {
-            _validZipCodes = validZipCodes;
+            _largeData = largeData;
             _logger = logger;
         }
 
-        async Task<string> ISearchAddress.GetAddress(string zipCode)
+        async Task<string> IWriteLargeData.WriteLargeData()
         {
-            _logger.LogInformation($"\n{DateTime.Now} GetAddress recieved.");
+            _logger.LogInformation($"\n{DateTime.Now} WriteLargeData recieved.");
 
-            var trimmedZipCode = zipCode.Replace("-", "");
-            trimmedZipCode = Enumerable.Range(0, 100000).Select(i => trimmedZipCode).Aggregate((x, y) => $"{x},{y}");
-            var addresses = await SearchAddressClient.ZipToAddress(trimmedZipCode);
+            var largeData = "";
+            largeData = Enumerable.Range(0, 30000).Select(i => "ABCDEFGHIJKLMNOPQRSTUVWXYZ").Aggregate((x, y) => $"{x},{y}");
 
-            if (addresses.Length > 0)
-            {
-                var address = addresses.FirstOrDefault();
-                _validZipCodes.State.ValidZipCodes.Add(new(trimmedZipCode));
+            _largeData.State.LargeData = largeData;
+            await _largeData.WriteStateAsync();
 
-                await _validZipCodes.WriteStateAsync();
-                return address.ToString();
-            }
-            return "該当する住所が見つかりません";
+            return "Grain Status の書き込みが終了しました。";
         }
 
     }

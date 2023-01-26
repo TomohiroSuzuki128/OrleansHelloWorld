@@ -1,11 +1,10 @@
 ﻿namespace Grains.Status
 {
     [Serializable]
-    public class ValidZipCodeState
+    public class WriteLargeDataState
     {
-        public ValidZipCodeState() { }
-        public ValidZipCodeState(string zipCode) => ValidZipCodes.Add(zipCode);
-        public List<string> ValidZipCodes { get; private set; } = new();
+        public WriteLargeDataState() { }
+        public string LargeData { get; set; } = string.Empty;
     }
 }
 

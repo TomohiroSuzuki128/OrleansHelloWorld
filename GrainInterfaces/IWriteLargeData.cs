@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Orleans;
 
-namespace OrleansBasics
+namespace OrleansPoc
 {
-    public interface ISearchAddress : Orleans.IGrainWithIntegerKey
+    public interface IWriteLargeData : Orleans.IGrainWithIntegerKey
     {
-        Task<string> GetAddress(string zipCode);
+        Task<string> WriteLargeData();
     }
 }

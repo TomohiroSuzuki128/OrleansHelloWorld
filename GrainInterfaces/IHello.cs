@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Orleans;
 
-namespace OrleansBasics
+namespace OrleansPoc
 {
     public interface IHello : Orleans.IGrainWithIntegerKey
     {

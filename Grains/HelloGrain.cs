@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
-namespace OrleansBasics
+namespace OrleansPoc
 {
     public class HelloGrain : Orleans.Grain, IHello
     {
