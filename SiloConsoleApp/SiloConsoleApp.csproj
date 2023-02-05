@@ -5,8 +5,10 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Configurations>Release;Debug</Configurations>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
   <ItemGroup>
     <None Remove="Microsoft.Extensions.Hosting" />
     <None Remove="Microsoft.Extensions.Logging.Console" />
@@ -15,9 +17,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.0" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="7.1.0" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="7.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GrainInterfaces\GrainInterfaces.csproj" />
