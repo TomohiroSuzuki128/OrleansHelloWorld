@@ -1,10 +1,5 @@
 ﻿using Orleans.Configuration;
 using OrleansPoc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Builder;
-using System;
 
 try
 {
@@ -22,16 +17,16 @@ try
     app.MapGet("/writelargedata", async () => await writeLargeData.WriteLargeData());
     await app.RunAsync();
 
-    Console.ReadKey();
+    //.ReadKey();
 
     return 0;
 }
 catch (Exception e)
 {
-    Console.WriteLine($"\nException while trying to run client: {e.Message}");
-    Console.WriteLine("Make sure the silo the client is trying to connect to is running.");
-    Console.WriteLine("\nPress any key to exit.");
-    Console.ReadKey();
+    //Console.WriteLine($"\nException while trying to run client: {e.Message}");
+    //Console.WriteLine("Make sure the silo the client is trying to connect to is running.");
+    //Console.WriteLine("\nPress any key to exit.");
+    //Console.ReadKey();
     return 1;
 }
 
@@ -57,7 +52,7 @@ static async Task<IHost> StartClientAsync()
     var host = builder.Build();
     await host.StartAsync();
 
-    Console.WriteLine("Client successfully connected to silo host \n");
+    //Console.WriteLine("Client successfully connected to silo host \n");
 
     return host;
 }
