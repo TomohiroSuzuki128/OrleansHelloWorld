@@ -3,14 +3,14 @@ using OrleansPoc;
 
 var host = await StartClientAsync();
 var client = host.Services.GetRequiredService<IClusterClient>();
-var friend = client.GetGrain<IHello>(Guid.NewGuid());
+var hello = client.GetGrain<IHello>(Guid.NewGuid());
 var zipToAddress = client.GetGrain<ISearchAddress>(Guid.NewGuid());
 var writeLargeData = client.GetGrain<IWriteLargeData>(Guid.NewGuid());
 
 var app = WebApplication.Create();
-app.MapGet("/", async () => await friend.Call());
-app.MapGet("/hello", async () => await friend.SayHello($"Konnichiwa!!"));
-app.MapGet("/deactivate", async () => await friend.Deactivate());
+app.MapGet("/", async () => await hello.Call());
+app.MapGet("/hello", async () => await hello.SayHello($"Konnichiwa!!"));
+app.MapGet("/deactivate", async () => await hello.Deactivate());
 app.MapGet("/ziptoaddress/{zipCode}", async (string zipCode) => await zipToAddress.GetAddress($"{zipCode}"));
 app.MapGet("/writelargedata", async () => await writeLargeData.WriteLargeData());
 await app.RunAsync();
