@@ -25,7 +25,7 @@ static async Task<IHost> StartSiloAsync()
         .UseOrleans(
             (context, builder) =>
             {
-                var siloIPAddress = IPAddress.Parse(context.Configuration["WEBSITE_PRIVATE_IP"]);
+                var siloIPAddress = IPAddress.Parse(context.Configuration["WEBSITE_PRIVATE_IP"] ?? "");
 
                 if (context.Configuration["ENVIRONMENT"] == "Development")
                 {
@@ -42,7 +42,6 @@ static async Task<IHost> StartSiloAsync()
                             options.ClusterId = "PoCCluster";
                             options.ServiceId = "OrleansPoC";
                         })
-                        //.AddMemoryGrainStorage("OrleansDevStorage");
                         .AddAzureTableGrainStorage(
                             "PocStore",
                              options => options.ConfigureTableServiceClient(connectionString)
