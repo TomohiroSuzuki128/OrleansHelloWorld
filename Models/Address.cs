@@ -12,11 +12,11 @@ namespace OrleansBasics.Models
 
         public Address(string[] values)
         {
-            ZipCode = values?.FirstOrDefault();
-            Prefecture = values?.Skip(1).FirstOrDefault();
-            City = values?.Skip(2).FirstOrDefault();
-            Machi = values?.Skip(3).FirstOrDefault();
-            Kana = values?.Skip(4).FirstOrDefault();
+            ZipCode = values?.FirstOrDefault() ?? "";
+            Prefecture = values?.Skip(1).FirstOrDefault() ?? "";
+            City = values?.Skip(2).FirstOrDefault() ?? "";
+            Machi = values?.Skip(3).FirstOrDefault() ?? "";
+            Kana = values?.Skip(4).FirstOrDefault() ?? "";
         }
         public Address(string zip, string[] values) : this(new string[] { zip }.Union(values).ToArray()) {; }
         public Address(string[] values, string kana) : this(values.Take(4).Union(new[] { kana }).ToArray()) {; }

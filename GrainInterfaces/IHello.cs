@@ -3,7 +3,7 @@ using Orleans;
 
 namespace OrleansPoc
 {
-    public interface IHello : Orleans.IGrainWithIntegerKey
+    public interface IHello : Orleans.IGrainWithGuidKey
     {
         Task<string> Call();
         Task<string> SayHello(string greeting);
