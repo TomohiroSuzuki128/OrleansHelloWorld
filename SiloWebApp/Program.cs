@@ -6,9 +6,9 @@ var siloHost = await StartSiloAsync();
 
 var clientHost = await StartClientAsync();
 var client = clientHost.Services.GetRequiredService<IClusterClient>();
-var friend = client.GetGrain<IHello>(0);
-var zipToAddress = client.GetGrain<ISearchAddress>(0);
-var writeLargeData = client.GetGrain<IWriteLargeData>(0);
+var friend = client.GetGrain<IHello>(Guid.NewGuid());
+var zipToAddress = client.GetGrain<ISearchAddress>(Guid.NewGuid());
+var writeLargeData = client.GetGrain<IWriteLargeData>(Guid.NewGuid());
 
 var app = WebApplication.Create();
 app.MapGet("/", async () => await friend.Call());

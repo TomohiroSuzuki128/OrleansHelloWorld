@@ -3,7 +3,7 @@ using Orleans;
 
 namespace OrleansPoc
 {
-    public interface ISearchAddress : Orleans.IGrainWithIntegerKey
+    public interface ISearchAddress : Orleans.IGrainWithGuidKey
     {
         Task<string> GetAddress(string zipCode);
     }

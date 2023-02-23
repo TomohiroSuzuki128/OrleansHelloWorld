@@ -15,11 +15,11 @@ namespace OrleansPoc.Sevices
         internal static string _urlZipSearch { get; } = $"{_urlBase}zipcode.php";
         internal static string _urlAddressSearch { get; } = $"{_urlZipSearch}?zip={{0}}";
 
-        static HttpClient _httpClient { get; set; }
+        static HttpClient? _httpClient { get; set; }
         internal static HttpClient HttpClient { get => _httpClient ?? (_httpClient = new HttpClient()); }
 
         static Regex _regDataRows { get; } = new Regex("<tr>(.|\\n)*? class=\"data\"(.|\\n)*?</tr>");
-        internal static string[] GetDataRows(string html) => _regDataRows.Matches(html)?.OfType<Match>().Select(m => m.Value).ToArray();
+        internal static string[] GetDataRows(string html) => _regDataRows.Matches(html)?.OfType<Match>().Select(m => m.Value).ToArray() ?? Array.Empty<string>();
 
 
         public static void Init(HttpClient httpClient) => _httpClient = httpClient;
@@ -61,13 +61,13 @@ namespace OrleansPoc.Sevices
         }
 
         static Regex _regDataElements { get; } = new Regex(" class=\"data\"(.|\\n)*?>[^>\\s]+<");
-        static string[] GetDataElements(string html) => _regDataElements.Matches(html)?.OfType<Match>().Select(m => m.Value).ToArray();
+        static string[] GetDataElements(string html) => _regDataElements.Matches(html)?.OfType<Match>().Select(m => m.Value).ToArray() ?? Array.Empty<string>();
 
         static Regex _regGetText { get; } = new Regex(">[^>\\s]+<");
-        static string GetText(string html) => _regGetText.Match(html)?.Value.Replace("<", "").Replace(">", "").Replace("&nbsp;", "");
+        static string GetText(string html) => _regGetText.Match(html)?.Value.Replace("<", "").Replace(">", "").Replace("&nbsp;", "") ?? "";
 
         static Regex _regKanaElement { get; } = new Regex(" class=\"comment\"(.|\\n)*?>[^>\\s]+<");
-        static string GetKanaElement(string html) => _regKanaElement.Match(html)?.Value;
+        static string GetKanaElement(string html) => _regKanaElement.Match(html)?.Value ?? "";
     }
 
     internal static class AddressToZip
@@ -105,19 +105,19 @@ namespace OrleansPoc.Sevices
         static string GetZip(string html) => GetText2(_regZip.Match(html)?.Value.Replace("〒", ""));
 
         static Regex _regGetText2 { get; } = new Regex(">([^>]|\\n)*?</");
-        static string GetText2(string html) => _regGetText2.Match(html)?.Value.Replace("</", "").Replace(">", "").Trim();
+        static string GetText2(string html) => _regGetText2.Match(html)?.Value.Replace("</", "").Replace(">", "").Trim() ?? "";
 
         static Regex _regAddress { get; } = new Regex(" class=\"data\" (.|\\n)*?</div>");
         static Address GetAddresss(string zip, string html)
         {
-            var addressArea = _regAddress.Match(html)?.Value;
+            var addressArea = _regAddress.Match(html)?.Value ?? "";
             var valuesElement = _regGetText2.Matches(addressArea).OfType<Match>().Select(m => m.Value).ToArray();
             var values = valuesElement.Select(m => GetText2(m)).Where(v => !string.IsNullOrWhiteSpace(v)).ToArray();
 
             return new Address(zip, values);
         }
         static Regex _regHref { get; } = new Regex(" href=\".+?\"");
-        static string GetHref(string html) => _regHref.Match(html)?.Value.Replace(" href=", "").Replace("\"", "");
+        static string GetHref(string html) => _regHref.Match(html)?.Value.Replace(" href=", "").Replace("\"", "") ?? "";
     }
 
     public static class Prefectures
@@ -183,7 +183,7 @@ namespace OrleansPoc.Sevices
                 var value = GetValue(option);
                 var name = GetName(option);
                 return new Prefecture(value, name);
-            }).ToArray();
+            }).ToArray() ?? Array.Empty<Prefecture>(); ;
             return prefectures;
         }
 
@@ -191,9 +191,9 @@ namespace OrleansPoc.Sevices
         static Regex _regOption { get; } = new Regex("<option value=\".+?\">(.|\\n)+?</option>");
         static Regex _regValue { get; } = new Regex("\".+?\"");
         static Regex _regName { get; } = new Regex(">.+?<");
-        static string GetPref(string html) => _regPref.Match(html)?.Value;
-        static string[] GetOptions(string html) => _regOption.Matches(html)?.OfType<Match>().Select(m => m.Value).ToArray();
-        static string GetValue(string html) => _regValue.Match(html)?.Value.Replace("\"", "");
-        static string GetName(string html) => _regName.Match(html)?.Value.Replace(">", "").Replace("<", "");
+        static string GetPref(string html) => _regPref.Match(html)?.Value ?? "";
+        static string[] GetOptions(string html) => _regOption.Matches(html)?.OfType<Match>().Select(m => m.Value).ToArray() ?? Array.Empty<string>();
+        static string GetValue(string html) => _regValue.Match(html)?.Value.Replace("\"", "") ?? "";
+        static string GetName(string html) => _regName.Match(html)?.Value.Replace(">", "").Replace("<", "") ?? "";
     }
 }

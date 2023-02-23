@@ -3,7 +3,7 @@ using Orleans;
 
 namespace OrleansPoc
 {
-    public interface IWriteLargeData : Orleans.IGrainWithIntegerKey
+    public interface IWriteLargeData : Orleans.IGrainWithGuidKey
     {
         Task<string> WriteLargeData();
     }
