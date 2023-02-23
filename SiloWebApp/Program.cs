@@ -4,42 +4,10 @@ using OrleansPoc;
 
 var siloHost = await StartSiloAsync();
 
-var clientHost = await StartClientAsync();
-var client = clientHost.Services.GetRequiredService<IClusterClient>();
-var friend = client.GetGrain<IHello>(Guid.NewGuid());
-var zipToAddress = client.GetGrain<ISearchAddress>(Guid.NewGuid());
-var writeLargeData = client.GetGrain<IWriteLargeData>(Guid.NewGuid());
-
+// Silo 動作確認用
 var app = WebApplication.Create();
-app.MapGet("/", async () => await friend.Call());
-app.MapGet("/hello", async () => await friend.SayHello($"Konnichiwa!!"));
-app.MapGet("/deactivate", async () => await friend.Deactivate());
-app.MapGet("/ziptoaddress/{zipCode}", async (string zipCode) => await zipToAddress.GetAddress($"{zipCode}"));
-app.MapGet("/writelargedata", async () => await writeLargeData.WriteLargeData());
+app.MapGet("/", () => $"Silo is activated {DateTime.Now}");
 await app.RunAsync();
-
-static async Task<IHost> StartClientAsync()
-{
-    var connectionString = Environment.GetEnvironmentVariable("ORLEANS_AZURE_STORAGE_CONNECTION_STRING");
-
-    var builder = new HostBuilder()
-        .UseOrleansClient(client =>
-        {
-            client
-                .UseAzureStorageClustering(
-                    options => options.ConfigureTableServiceClient(connectionString))
-                .Configure<ClusterOptions>(options =>
-                {
-                    options.ClusterId = "PoCCluster";
-                    options.ServiceId = "OrleansPoC";
-                });
-        })
-        .ConfigureLogging(logging => logging.AddConsole());
-
-    var host = builder.Build();
-    await host.StartAsync();
-    return host;
-}
 
 static async Task<IHost> StartSiloAsync()
 {
