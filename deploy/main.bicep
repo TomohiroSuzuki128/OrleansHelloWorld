@@ -24,28 +24,8 @@ param storageAccounts_orleanspoc_name string
 */
 
 
-
-/*
-module storageModule 'storage.bicep' = {
-  name: 'orleansStorageModule'
-  params: {
-    name: '${appName}storage'
-    location: location
-  }
-}
-
-module logsModule 'logs-and-insights.bicep' = {
-  name: 'orleansLogModule'
-  params: {
-    operationalInsightsName: '${appName}-logs'
-    appInsightsName: '${appName}-insights'
-    location: location
-  }
-}
-*/
-
-
-resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+// VNet
+resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
   name: 'VNet${appName}'
   location: location
   properties: {
@@ -55,6 +35,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
       ]
     }
     subnets: [
+      // 0
       {
         name: 'FrontEndOutbound'
         properties: {
@@ -81,6 +62,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         }
         type: 'Microsoft.Network/virtualNetworks/subnets'
       }
+      // 1
       {
         name: 'AppServiceInbound'
         properties: {
@@ -92,6 +74,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         }
         type: 'Microsoft.Network/virtualNetworks/subnets'
       }
+      // 2
       {
         name: 'AppServiceOutbound01'
         properties: {
@@ -118,6 +101,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         }
         type: 'Microsoft.Network/virtualNetworks/subnets'
       }
+      // 3
       {
         name: 'AppServiceOutbound02'
         properties: {
@@ -144,6 +128,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         }
         type: 'Microsoft.Network/virtualNetworks/subnets'
       }
+      // 4
       {
         name: 'StorageInbound'
         properties: {
@@ -159,29 +144,25 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   }
 }
 
+module storageModule 'storage.bicep' = {
+  name: 'orleansStorageModule'
+  params: {
+    storageName: '${appName}storage'
+    location: location
+    vnetSubnetFrontEndOutboundId: vnet.properties.subnets[0].id
+    vnetSubnetAppServiceOutbound01Id: vnet.properties.subnets[2].id
+    vnetSubnetAppServiceOutbound02Id: vnet.properties.subnets[3].id
+  }
+}
 
-
-/*
-
-
-module siloModule 'app-service.bicep' = {
+module appModule 'app-services.bicep' = {
   name: 'orleansSiloModule'
   params: {
     appName: appName
     location: location
-
-    vnetSubnetId: vnet_resource.properties.subnets[0].id
-
-    vnetSubnetFrontEndOutboundId: vnet_resource.properties.subnets[1].id
-    vnetSubnetAppServiceOutbound01Id: vnet_resource.properties.subnets[0].id
-    vnetSubnetAppServiceOutbound02Id: vnet_resource.properties.subnets[0].id
-
-    appInsightsConnectionString: logsModule.outputs.appInsightsConnectionString
-    appInsightsInstrumentationKey: logsModule.outputs.appInsightsInstrumentationKey
+    vnetSubnetFrontEndOutboundId: vnet.properties.subnets[0].id
+    vnetSubnetAppServiceOutbound01Id: vnet.properties.subnets[2].id
+    vnetSubnetAppServiceOutbound02Id: vnet.properties.subnets[3].id
     storageConnectionString: storageModule.outputs.connectionString
   }
 }
-
-
-*/
-

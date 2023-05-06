@@ -1,14 +1,15 @@
-param appNameFrontend string
-param appNameSilo01 string
-param appNameSilo02 string
+param appName string
 param location string
-param vnetSubnetId string
-param appInsightsInstrumentationKey string
-param appInsightsConnectionString string
+param vnetSubnetFrontEndOutboundId string
+param vnetSubnetAppServiceOutbound01Id string
+param vnetSubnetAppServiceOutbound02Id string
 param storageConnectionString string
 
-resource appServicePlanFrontend 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: '${appNameFrontend}-plan'
+var httploggingRetentionDays = '7'
+
+// App Service Plans
+resource app_plan_frontend 'Microsoft.Web/serverfarms@2022-09-01' = {
+  name: 'Plan${appName}Frontend'
   location: location
   kind: 'app'
   sku: {
@@ -17,8 +18,8 @@ resource appServicePlanFrontend 'Microsoft.Web/serverfarms@2021-03-01' = {
   }
 }
 
-resource appServicePlanSilo01 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: '${appNameSilo01}-plan'
+resource app_plan_silo01 'Microsoft.Web/serverfarms@2022-09-01' = {
+  name: 'Plan${appName}Silo01'
   location: location
   kind: 'app'
   sku: {
@@ -27,8 +28,8 @@ resource appServicePlanSilo01 'Microsoft.Web/serverfarms@2021-03-01' = {
   }
 }
 
-resource appServicePlanSilo02 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: '${appNameSilo02}-plan'
+resource app_plan_silo02 'Microsoft.Web/serverfarms@2022-09-01' = {
+  name: 'Plan${appName}Silo02'
   location: location
   kind: 'app'
   sku: {
@@ -37,14 +38,14 @@ resource appServicePlanSilo02 'Microsoft.Web/serverfarms@2021-03-01' = {
   }
 }
 
-
-resource appServiceSilo01 'Microsoft.Web/sites@2021-03-01' = {
-  name: appNameSilo01
+// Apps
+resource app_frontend 'Microsoft.Web/sites@2022-09-01' = {
+  name: 'App${appName}Frontend'
   location: location
   kind: 'app'
   properties: {
-    serverFarmId: appServicePlanSilo01.id
-    virtualNetworkSubnetId: vnetSubnetId
+    serverFarmId: app_plan_frontend.id
+    virtualNetworkSubnetId: vnetSubnetFrontEndOutboundId
     httpsOnly: true
     siteConfig: {
       vnetPrivatePortsCount: 2
@@ -52,77 +53,77 @@ resource appServiceSilo01 'Microsoft.Web/sites@2021-03-01' = {
       netFrameworkVersion: 'v7.0'
       appSettings: [
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsightsInstrumentationKey
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-        {
           name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
           value: storageConnectionString
         }
         {
-          name: 'ORLEANS_CLUSTER_ID'
-          value: 'Default'
+          name: 'WEBSITE_HTTPLOGGING_RETENTION_DAYS'
+          value: httploggingRetentionDays
         }
-      ]
-      alwaysOn: true
-    }
-  }
-}
-
-
-resource appServiceSilo02 'Microsoft.Web/sites@2021-03-01' = {
-  name: appNameSilo02
-  location: location
-  kind: 'app'
-  properties: {
-    serverFarmId: appServicePlanSilo02.id
-    virtualNetworkSubnetId: vnetSubnetId
-    httpsOnly: true
-    siteConfig: {
-      vnetPrivatePortsCount: 2
-      webSocketsEnabled: true
-      netFrameworkVersion: 'v7.0'
-      appSettings: [
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsightsInstrumentationKey
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-        {
-          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
-          value: storageConnectionString
-        }
-        {
-          name: 'ORLEANS_CLUSTER_ID'
-          value: 'Default'
-        }
-      ]
-      alwaysOn: true
-    }
-  }
-}
-
-resource slotConfig 'Microsoft.Web/sites/config@2021-03-01' = {
-  name: 'slotConfigNames'
-  parent: appService
-  properties: {
-    appSettingNames: [
-      'ORLEANS_CLUSTER_ID'
     ]
+      alwaysOn: true
+    }
   }
 }
 
-resource appServiceConfig 'Microsoft.Web/sites/config@2021-03-01' = {
-  parent: appService
-  name: 'metadata'
+resource app_silo01 'Microsoft.Web/sites@2022-09-01' = {
+  name: 'App${appName}Silo01'
+  location: location
+  kind: 'app'
   properties: {
-    CURRENT_STACK: 'dotnet'
+    serverFarmId: app_plan_silo01.id
+    virtualNetworkSubnetId: vnetSubnetAppServiceOutbound01Id
+    httpsOnly: true
+    siteConfig: {
+      vnetPrivatePortsCount: 2
+      webSocketsEnabled: true
+      netFrameworkVersion: 'v7.0'
+      appSettings: [
+        {
+          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
+          value: storageConnectionString
+        }
+        {
+          name: 'WEBSITE_HTTPLOGGING_RETENTION_DAYS'
+          value: httploggingRetentionDays
+        }
+        {
+          name: 'WEBSITE_PRIVATE_IP'
+          value: '10.0.10.4'
+        }
+      ]
+      alwaysOn: true
+    }
+  }
+}
+
+resource appServiceSilo02 'Microsoft.Web/sites@2022-09-01' = {
+  name: 'App${appName}Silo02'
+  location: location
+  kind: 'app'
+  properties: {
+    serverFarmId: app_plan_silo02.id
+    virtualNetworkSubnetId: vnetSubnetAppServiceOutbound02Id
+    httpsOnly: true
+    siteConfig: {
+      vnetPrivatePortsCount: 2
+      webSocketsEnabled: true
+      netFrameworkVersion: 'v7.0'
+      appSettings: [
+        {
+          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
+          value: storageConnectionString
+        }
+        {
+          name: 'WEBSITE_HTTPLOGGING_RETENTION_DAYS'
+          value: httploggingRetentionDays
+        }
+        {
+          name: 'WEBSITE_PRIVATE_IP'
+          value: '10.0.10.5'
+        }
+    ]
+      alwaysOn: true
+    }
   }
 }
