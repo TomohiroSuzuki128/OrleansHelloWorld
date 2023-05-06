@@ -5,7 +5,7 @@ param vnetSubnetAppServiceOutbound01Id string
 param vnetSubnetAppServiceOutbound02Id string
 
 resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: 'storage${toLower(storageName)}'
+  name: storageName
   location: location
   kind: 'StorageV2'
   sku: {

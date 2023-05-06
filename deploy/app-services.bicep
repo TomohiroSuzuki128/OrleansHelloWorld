@@ -3,12 +3,14 @@ param location string
 param vnetSubnetFrontEndOutboundId string
 param vnetSubnetAppServiceOutbound01Id string
 param vnetSubnetAppServiceOutbound02Id string
+
+@secure()
 param storageConnectionString string
 
 var httploggingRetentionDays = '7'
 
 // App Service Plans
-resource app_plan_frontend 'Microsoft.Web/serverfarms@2022-09-01' = {
+resource appPlanFrontend 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'Plan${appName}Frontend'
   location: location
   kind: 'app'
@@ -18,7 +20,7 @@ resource app_plan_frontend 'Microsoft.Web/serverfarms@2022-09-01' = {
   }
 }
 
-resource app_plan_silo01 'Microsoft.Web/serverfarms@2022-09-01' = {
+resource appPlanSilo01 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'Plan${appName}Silo01'
   location: location
   kind: 'app'
@@ -28,7 +30,7 @@ resource app_plan_silo01 'Microsoft.Web/serverfarms@2022-09-01' = {
   }
 }
 
-resource app_plan_silo02 'Microsoft.Web/serverfarms@2022-09-01' = {
+resource appPlanSilo02 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'Plan${appName}Silo02'
   location: location
   kind: 'app'
@@ -39,12 +41,12 @@ resource app_plan_silo02 'Microsoft.Web/serverfarms@2022-09-01' = {
 }
 
 // Apps
-resource app_frontend 'Microsoft.Web/sites@2022-09-01' = {
+resource appFrontend 'Microsoft.Web/sites@2022-09-01' = {
   name: 'App${appName}Frontend'
   location: location
   kind: 'app'
   properties: {
-    serverFarmId: app_plan_frontend.id
+    serverFarmId: appPlanFrontend.id
     virtualNetworkSubnetId: vnetSubnetFrontEndOutboundId
     httpsOnly: true
     siteConfig: {
@@ -66,12 +68,12 @@ resource app_frontend 'Microsoft.Web/sites@2022-09-01' = {
   }
 }
 
-resource app_silo01 'Microsoft.Web/sites@2022-09-01' = {
+resource appSilo01 'Microsoft.Web/sites@2022-09-01' = {
   name: 'App${appName}Silo01'
   location: location
   kind: 'app'
   properties: {
-    serverFarmId: app_plan_silo01.id
+    serverFarmId: appPlanSilo01.id
     virtualNetworkSubnetId: vnetSubnetAppServiceOutbound01Id
     httpsOnly: true
     siteConfig: {
@@ -97,12 +99,12 @@ resource app_silo01 'Microsoft.Web/sites@2022-09-01' = {
   }
 }
 
-resource appServiceSilo02 'Microsoft.Web/sites@2022-09-01' = {
+resource appSilo02 'Microsoft.Web/sites@2022-09-01' = {
   name: 'App${appName}Silo02'
   location: location
   kind: 'app'
   properties: {
-    serverFarmId: app_plan_silo02.id
+    serverFarmId: appPlanSilo02.id
     virtualNetworkSubnetId: vnetSubnetAppServiceOutbound02Id
     httpsOnly: true
     siteConfig: {
@@ -127,3 +129,6 @@ resource appServiceSilo02 'Microsoft.Web/sites@2022-09-01' = {
     }
   }
 }
+
+output silo01AppId string = appSilo01.id
+output silo02AppId string = appSilo02.id
