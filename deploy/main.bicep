@@ -1,6 +1,7 @@
-
 param appName string
 param location string = resourceGroup().location
+
+var storageName = 'storage${toLower(appName)}'
 
 // VNet
 resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
@@ -125,7 +126,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
 module storageModule 'storage.bicep' = {
   name: 'orleansStorageModule'
   params: {
-    storageName: 'storage${toLower(appName)}'
+    storageName: storageName
     location: location
     vnetSubnetFrontEndOutboundId: vnet.properties.subnets[0].id
     vnetSubnetAppServiceOutbound01Id: vnet.properties.subnets[2].id
@@ -188,8 +189,29 @@ resource privateEndpointSilo02 'Microsoft.Network/privateEndpoints@2022-09-01' =
   }
 }
 
-resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.${appName}.net'
+resource privateEndpointTableStorage 'Microsoft.Network/privateEndpoints@2022-09-01' = {
+  name: 'Pep${appName}TableStorage'
+  location: location
+  properties: {
+    subnet: {
+      id: vnet.properties.subnets[4].id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'Pep${appName}TableStorage'
+        properties: {
+          privateLinkServiceId: storageModule.outputs.storageId
+          groupIds: [
+            'table'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource privateDnsZoneApp 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.azurewebsites'
   location: 'global'
   properties: {}
   dependsOn: [
@@ -197,9 +219,30 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   ]
 }
 
-resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: privateDnsZone
-  name: 'VNetLinkPrivateDnsZone${appName}'
+resource privateDnsZoneTableStorage 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.table.core'
+  location: 'global'
+  properties: {}
+    dependsOn: [
+      vnet
+    ]
+}
+
+resource privateDnsZoneLinkApp 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: privateDnsZoneApp
+  name: 'VNetLinkPrivateDnsZoneApp'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource privateDnsZoneLinkTableStorage 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: privateDnsZoneTableStorage
+  name: 'VNetLinkPrivateDnsZoneTableStorage'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -217,7 +260,7 @@ resource privateEndpointDnsGroupSilo01 'Microsoft.Network/privateEndpoints/priva
       {
         name: 'privatelink-azurewebsites-net'
         properties: {
-          privateDnsZoneId: privateDnsZone.id
+          privateDnsZoneId: privateDnsZoneApp.id
         }
       }
     ]
@@ -232,49 +275,22 @@ resource privateEndpointDnsGroupSilo02 'Microsoft.Network/privateEndpoints/priva
       {
         name: 'privatelink-azurewebsites-net'
         properties: {
-          privateDnsZoneId: privateDnsZone.id
+          privateDnsZoneId: privateDnsZoneApp.id
         }
       }
     ]
   }
 }
 
-resource networkInterfacePepSilo01 'Microsoft.Network/networkInterfaces@2021-08-01' = {
-  name: '${appName}PepSilo01.nic'
-  location: location
-  tags: {
-    name: '${appName}PepSilo01.nic'
-  }
+resource privateEndpointDnsGroupTableStorage 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2021-05-01' = {
+  parent: privateEndpointTableStorage
+  name: 'default'
   properties: {
-    ipConfigurations: [
+    privateDnsZoneConfigs: [
       {
-        name: 'privateEndpointIpConfig.${appName}PepSilo01'
+        name: 'privatelink-azurewebsites-net'
         properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          subnet: {
-            id: vnet.properties.subnets[1].id
-          }
-        }
-      }
-    ]
-  }
-}
-
-resource networkInterfacePepSilo02 'Microsoft.Network/networkInterfaces@2021-08-01' = {
-  name: '${appName}PepSilo02.nic'
-  location: location
-  tags: {
-    name: '${appName}PepSilo02.nic'
-  }
-  properties: {
-    ipConfigurations: [
-      {
-        name: 'privateEndpointIpConfig.${appName}PepSilo02'
-        properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          subnet: {
-            id: vnet.properties.subnets[1].id
-          }
+          privateDnsZoneId: privateDnsZoneApp.id
         }
       }
     ]
@@ -284,89 +300,72 @@ resource networkInterfacePepSilo02 'Microsoft.Network/networkInterfaces@2021-08-
 // https://learn.microsoft.com/ja-jp/azure/app-service/networking/private-endpoint#dns
 // Private Endpoint DNS レコード
 
-/*
-resource privateDnsZones_privatelink_table_core_windows_net_name_orleanspoc 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
-  parent: privateDnsZones_privatelink_table_core_windows_net_name_resource
-  name: 'orleanspoc'
+resource privateDnsZonesRecordTableStorage 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
+  parent: privateDnsZoneTableStorage
+  name: storageName
   properties: {
     aRecords: [
       {
         ipv4Address: '10.0.30.4'
       }
     ]
-    metadata: {
-      creator: 'created by private endpoint OrleansPoCPEPStorage with resource guid d73a4673-f57a-4360-bed2-68b1e3a29ecf'
-    }
     ttl: 10
   }
 }
-*/
+
+resource privateDnsZonesRecordSilo01 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
+  parent: privateDnsZoneApp
+  name: toLower('App${appName}Silo01')
+  properties: {
+    aRecords: [
+      {
+        ipv4Address: '10.0.10.4'
+      }
+    ]
+    ttl: 10
+  }
+}
+
+resource privateDnsZonesRecordSilo01Scm 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
+  parent: privateDnsZoneApp
+  name: toLower('App${appName}Silo01.scm')
+  properties: {
+    aRecords: [
+      {
+        ipv4Address: '10.0.10.4'
+      }
+    ]
+    ttl: 10
+  }
+}
+
+resource privateDnsZonesRecordSilo02 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
+  parent: privateDnsZoneApp
+  name: toLower('App${appName}Silo02')
+  properties: {
+    aRecords: [
+      {
+        ipv4Address: '10.0.10.5'
+      }
+    ]
+    ttl: 10
+  }
+}
+
+resource privateDnsZonesRecordSilo02Scm 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
+  parent: privateDnsZoneApp
+  name: toLower('App${appName}Silo02.scm')
+  properties: {
+    aRecords: [
+      {
+        ipv4Address: '10.0.10.5'
+      }
+    ]
+    ttl: 10
+  }
+}
 
 /*
-resource privateDnsZones_privatelink_azurewebsites_net_name_orleanspoc01 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
-  parent: privateDnsZones_privatelink_azurewebsites_net_name_resource
-  name: 'orleanspoc01'
-  properties: {
-    aRecords: [
-      {
-        ipv4Address: networkInterfacePepSilo01.properties.ipConfigurations[0].properties.privateIPAddress
-      }
-    ]
-    metadata: {
-      creator: 'created by private endpoint OrleansPoCPEP01 with resource guid 5af9b01e-8020-431d-8293-ba61e94eb368'
-    }
-    ttl: 10
-  }
-}
-
-resource privateDnsZones_privatelink_azurewebsites_net_name_orleanspoc01_scm 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
-  parent: privateDnsZones_privatelink_azurewebsites_net_name_resource
-  name: 'orleanspoc01.scm'
-  properties: {
-    aRecords: [
-      {
-        ipv4Address: networkInterfacePepSilo01.properties.ipConfigurations[0].properties.privateIPAddress
-      }
-    ]
-    metadata: {
-      creator: 'created by private endpoint OrleansPoCPEP01 with resource guid 5af9b01e-8020-431d-8293-ba61e94eb368'
-    }
-    ttl: 10
-  }
-}
-
-resource privateDnsZones_privatelink_azurewebsites_net_name_orleanspoc02 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
-  parent: privateDnsZones_privatelink_azurewebsites_net_name_resource
-  name: 'orleanspoc02'
-  properties: {
-    aRecords: [
-      {
-        ipv4Address: '10.0.10.5'
-      }
-    ]
-    metadata: {
-      creator: 'created by private endpoint OrleansPoCPEP02 with resource guid 01320938-280d-42cb-ba89-a2c4ec3d4abb'
-    }
-    ttl: 10
-  }
-}
-
-resource privateDnsZones_privatelink_azurewebsites_net_name_orleanspoc02_scm 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
-  parent: privateDnsZones_privatelink_azurewebsites_net_name_resource
-  name: 'orleanspoc02.scm'
-  properties: {
-    aRecords: [
-      {
-        ipv4Address: '10.0.10.5'
-      }
-    ]
-    metadata: {
-      creator: 'created by private endpoint OrleansPoCPEP02 with resource guid 01320938-280d-42cb-ba89-a2c4ec3d4abb'
-    }
-    ttl: 10
-  }
-}
-
 resource Microsoft_Network_privateDnsZones_SOA_privateDnsZones_privatelink_azurewebsites_net_name 'Microsoft.Network/privateDnsZones/SOA@2018-09-01' = {
   parent: privateDnsZones_privatelink_azurewebsites_net_name_resource
   name: '@'

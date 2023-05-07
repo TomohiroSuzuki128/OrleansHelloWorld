@@ -40,3 +40,4 @@ var accountBits = 'AccountName=${storage.name};AccountKey=${key}'
 var endpointSuffix = 'EndpointSuffix=${environment().suffixes.storage}'
 
 output connectionString string = '${protocol};${accountBits};${endpointSuffix}'
+output storageId string = storage.id

@@ -52,7 +52,14 @@ resource appFrontend 'Microsoft.Web/sites@2022-09-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
+      metadata :[
+        {
+          name:'CURRENT_STACK'
+          value:'dotnet'
+        }
+      ]
       netFrameworkVersion: 'v7.0'
+      use32BitWorkerProcess: false
       appSettings: [
         {
           name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
@@ -79,7 +86,14 @@ resource appSilo01 'Microsoft.Web/sites@2022-09-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
+      metadata :[
+        {
+          name:'CURRENT_STACK'
+          value:'dotnet'
+        }
+      ]
       netFrameworkVersion: 'v7.0'
+      use32BitWorkerProcess: false
       appSettings: [
         {
           name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
@@ -110,7 +124,14 @@ resource appSilo02 'Microsoft.Web/sites@2022-09-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
+      metadata :[
+        {
+          name:'CURRENT_STACK'
+          value:'dotnet'
+        }
+      ]
       netFrameworkVersion: 'v7.0'
+      use32BitWorkerProcess: false
       appSettings: [
         {
           name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
