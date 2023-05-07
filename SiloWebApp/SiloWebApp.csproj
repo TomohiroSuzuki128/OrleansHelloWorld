@@ -21,7 +21,21 @@
     <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="7.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GrainInterfaces\GrainInterfaces.csproj" />
-    <ProjectReference Include="..\Grains\Grains.csproj" />
+    <ProjectReference Include="..\GrainInterfaces\GrainInterfaces.csproj">
+      <Targets></Targets>
+      <OutputItemType></OutputItemType>
+      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+      <GlobalPropertiesToRemove>;WebPublishProfileFile</GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Grains\Grains.csproj">
+      <Targets></Targets>
+      <OutputItemType></OutputItemType>
+      <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+      <GlobalPropertiesToRemove>;WebPublishProfileFile</GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\AppOrleansHiro128777Silo01 - Zip Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\AppOrleansHiro128777Silo02 - Zip Deploy.pubxml" />
   </ItemGroup>
 </Project>
