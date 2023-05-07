@@ -52,6 +52,10 @@ resource appFrontend 'Microsoft.Web/sites@2022-09-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
+      logsDirectorySizeLimit: 35
+      httpLoggingEnabled: true
+      detailedErrorLoggingEnabled: true
+      requestTracingEnabled: true
       metadata :[
         {
           name:'CURRENT_STACK'
@@ -86,6 +90,10 @@ resource appSilo01 'Microsoft.Web/sites@2022-09-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
+      logsDirectorySizeLimit: 35
+      httpLoggingEnabled: true
+      detailedErrorLoggingEnabled: true
+      requestTracingEnabled: true
       metadata :[
         {
           name:'CURRENT_STACK'
@@ -124,6 +132,10 @@ resource appSilo02 'Microsoft.Web/sites@2022-09-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
+      logsDirectorySizeLimit: 35
+      httpLoggingEnabled: true
+      detailedErrorLoggingEnabled: true
+      requestTracingEnabled: true
       metadata :[
         {
           name:'CURRENT_STACK'
